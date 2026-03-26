@@ -99,13 +99,11 @@ WELCOME_BANNER = r"""
   \____\__,_|\__|_.__/ \___//_/\_\(_)
 
 ========================================================================
-         A Quantum Art Installation by Schrödinger's Catbox
-========================================================================
 """
 
 WELCOME_SHORT = r"""
 +----------------------------------------------------------------------+
-|        *** SCHRODINGER'S CATBOX ***  -- a quantum art piece          |
+|               *** SCHRODINGER'S CATBOX ***                           |
 +----------------------------------------------------------------------+
 """
 
@@ -246,8 +244,8 @@ Please wait — or open the box and face your destiny.
 
 FOOTER = """
 ------------------------------------------------------------------------
-  Schrodinger's Catbox  |  A quantum art installation
-  catbox.local          |  telnet for visitors, ssh for the artist
+  Schrodinger's Catbox  |  catbox.local
+  telnet for visitors   |  ssh for the artist
 ------------------------------------------------------------------------
 """
 

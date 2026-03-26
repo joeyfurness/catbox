@@ -189,16 +189,22 @@ class CatboxHandler(socketserver.BaseRequestHandler):
     def _recv_line(self) -> str | None:
         """
         Read bytes from the socket until we get a complete line (\\r\\n or
-        \\n).  Strips IAC sequences.  Returns None on disconnect.
+        \\n).  Strips IAC sequences and echoes printable characters back
+        to the client (since the server negotiated WILL ECHO).
+        Returns None on disconnect.
         """
         while True:
             # Check buffer for a complete line.
-            for terminator in (b"\r\n", b"\n", b"\r"):
+            # \r\0 is what macOS telnet sends (CR NUL per RFC 854).
+            for terminator in (b"\r\n", b"\r\0", b"\n", b"\r"):
                 idx = self._buf.find(terminator)
                 if idx != -1:
                     line = self._buf[:idx]
                     self._buf = self._buf[idx + len(terminator):]
-                    return self._strip_telnet(line).decode("utf-8", errors="replace").strip()
+                    self._send_raw(b"\r\n")  # echo the newline
+                    # Strip NUL bytes that may have leaked through.
+                    cleaned = self._strip_telnet(line).replace(b"\x00", b"")
+                    return cleaned.decode("utf-8", errors="replace").strip()
 
             try:
                 chunk = self._conn.recv(256)
@@ -206,6 +212,21 @@ class CatboxHandler(socketserver.BaseRequestHandler):
                 return None
             if not chunk:
                 return None
+
+            # Echo printable characters back (skip IAC sequences).
+            clean = self._strip_telnet(chunk)
+            for byte in clean:
+                if byte == 0x7f or byte == 0x08:  # backspace/delete
+                    # Remove last char from buffer and echo backspace
+                    if self._buf:
+                        self._buf = self._buf[:-1]
+                        self._send_raw(b"\x08 \x08")
+                    continue
+                elif byte in (0x0d, 0x0a):
+                    pass  # line terminators handled above
+                elif 0x20 <= byte < 0x7f:
+                    self._send_raw(bytes([byte]))
+
             self._buf += chunk
 
     def _strip_telnet(self, data: bytes) -> bytes:
