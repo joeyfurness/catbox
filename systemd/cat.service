@@ -1,0 +1,13 @@
+[Unit]
+Description=Schrödinger's Catbox
+After=network.target
+
+[Service]
+User=schrodinger
+ExecStart=/usr/bin/python3 /home/schrodinger/catbox/src/main.py
+Restart=on-failure
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
