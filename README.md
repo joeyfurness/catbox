@@ -2,7 +2,7 @@
      /\_____/\
     /  o   o  \
    ( ==  ^  == )
-    )         (        You found the catbox.
+    )         (
    (     w     )
   ( (  )   (  ) )
  (__(__)___(__)__)
@@ -10,31 +10,19 @@
 
 # Schrodinger's Catbox
 
-**A digital cat that might be dead. You have to look to find out.**
-
-So there's a Raspberry Pi sitting in a room somewhere. When it boots, a program
-called `cat` starts running. (Yes, *that* `cat`. We'll get to that.)
-
-You telnet in. There's a cat. It's alive. It's vibing. You can pet it.
+A Raspberry Pi sits in a room. On boot, a program called `cat` starts. You telnet in, there's a cat. You can pet it.
 
 Then you close the box.
 
-While the box is closed, a simulated radioactive atom is decaying in the background.
-Maybe it's already triggered. Maybe it hasn't. You don't know. Open the box and
-find out. Or don't. The cat doesn't care. (Or does it?)
+While the box is closed, a simulated radioactive atom decays in the background. Maybe it already triggered. Maybe not. Open the box to find out. If the atom decayed, the cat is dead. It stays dead. Only way back is `sudo reboot`.
 
-If the atom decayed, the cat is dead. It stays dead. The only resurrection
-is `sudo reboot`.
-
----
-
-## How It Works
+## Connecting
 
 ```
 telnet catbox.local 1701
 ```
 
-No login. No password. Just a cat.
+No login. No password.
 
 ```
 +==============================================================================+
@@ -60,22 +48,19 @@ No login. No password. Just a cat.
 
 ### Commands
 
-| Command | What happens |
-|---------|-------------|
-| `CLOSE` | Seal the box. Superposition begins. The atom starts to decay. |
-| `OPEN` | Open the box. Collapse the wavefunction. Good luck. |
-| `PET` | Pet the cat. (Results may vary depending on... aliveness.) |
-| `STATUS` | What's going on in there? |
-| `HELP` | It's there if you need it. |
-| `QUIT` | Walk away. |
-| `REBOOT` | Power cycle the Pi. The only known cure for death. |
+| Command | |
+|---------|---|
+| `CLOSE` | Seal the box. Superposition begins. |
+| `OPEN` | Collapse the wavefunction. |
+| `PET` | Pet the cat. |
+| `STATUS` | Check on things. |
+| `HELP` | Help. |
+| `QUIT` | Leave. |
+| `REBOOT` | Power cycle the Pi. Only known cure for death. |
 
----
+## The math
 
-## The Quantum Mechanics (sort of)
-
-While the box is closed, a background process rolls dice using an exponential
-probability distribution:
+Exponential decay while the box is closed:
 
 ```
 P(decay by time t) = 1 - e^(-lambda*t)
@@ -83,69 +68,92 @@ P(decay by time t) = 1 - e^(-lambda*t)
 where lambda = ln(2) / half_life
 ```
 
-Half-life is 30 seconds by default. So:
+Default half-life is 30 seconds.
 
-| Time closed | Chance the cat is dead |
-|------------|----------------------|
-| 0 seconds | 0% |
-| 15 seconds | ~29% |
-| 30 seconds | 50% |
-| 1 minute | 75% |
-| 2 minutes | 93.75% |
-| 5 minutes | 99.9% — yeah it's dead |
+| Time closed | Chance dead |
+|------------|-------------|
+| 0s | 0% |
+| 15s | ~29% |
+| 30s | 50% |
+| 1 min | 75% |
+| 2 min | 93.75% |
+| 5 min | 99.9% |
 
-The dice roll happens every 500ms. There's a probability counter ticking up in
-real-time while the box is closed, which is a fun thing to stare at while you
-contemplate what you've set in motion. But you still don't know the actual outcome
-until you open it.
+Dice roll every 500ms. There's a probability counter ticking up in real-time while you watch. You don't know the actual outcome until you open it.
 
----
-
-## Why is `cat` called `cat`
-
-Because it's funny.
+## Why `cat`
 
 ```bash
 $ which cat
 /home/schrodinger/catbox/src/main.py
 
-$ cat          # doesn't concatenate files anymore
-               # runs a quantum physics experiment instead
+$ cat
+# doesn't concatenate files anymore
+# runs a quantum physics experiment instead
 ```
 
-This is the whole bit. The Pi runs headless — no monitor, no display.
-The cat exists only when someone connects to observe it. Multiple visitors
-can connect at once and they all share the same cat. One person closes
-the box, someone else opens it. Distributed quantum murder.
+The Pi is headless. No monitor. The cat exists only when someone connects to observe it. Multiple visitors share the same cat. One person closes the box, someone else opens it.
 
-The cat has idle animations too. It blinks, yawns, falls asleep if you
-leave it alone long enough. In superposition it glitches out — half-alive,
-half-dead, bits of each state bleeding through. When it's dead, flowers
-grow. A ghost drifts by sometimes. I spent way too long on the ghost.
+It has idle animations. Blinks, yawns, falls asleep. In superposition it glitches. Half-alive, half-dead, bits of each state bleeding through. When it dies, flowers grow. A ghost drifts by sometimes.
 
----
+## The three states
 
-## Running It
+### Alive
+
+```
+    /\_____/\
+   /  o   o  \
+  ( ==  ^  == )       I'm alive! ... probably.
+   )         (
+  (     w     )
+ ( (  )   (  ) )
+(__(__)___(__)__)
+```
+
+Don't touch anything.
+
+### Superposition
+
+```
+    /\_/??/\_/\
+   / o?? ??x o \
+  (== ^??? _? ==)     |alive> + |dead>
+   ) ????????? (
+  (  ???????????)
+ ( ( ) ????? ( ) )
+(__(__)??????(__)__)
+```
+
+You closed the box and now you have to live with this.
+
+### Dead
+
+```
+    /\_____/\
+   /  x   x  \
+  ( ==  _  == )
+   )  R.I.P.  (
+  (   ~cat~    )
+ ( (  )   (  ) )
+(__(__)___(__)__)
+```
+
+Stays dead until reboot.
+
+## Running it
 
 ### On the Pi
 
 ```bash
-# systemd starts it on boot
 sudo systemctl status cat
-
-# tail the logs
 journalctl -u cat -f
-
-# bring the cat back from the dead
-sudo reboot
+sudo reboot    # bring the cat back
 ```
 
 ### Local dev
 
 ```bash
 python3 src/main.py --port 1701 --half-life 30
-
-# then:
 telnet localhost 1701
 ```
 
@@ -153,17 +161,16 @@ telnet localhost 1701
 
 ```bash
 git push origin main
-# that's it, auto-deploys to the Pi
 ```
 
-### CLI flags
+Auto-deploys to the Pi.
+
+### Flags
 
 ```
 --port PORT         Telnet port (default: 1701)
 --half-life SECS    Decay half-life in seconds (default: 30)
 ```
-
----
 
 ## Architecture
 
@@ -181,60 +188,7 @@ systemd/
 deploy.sh        - SCP + restart (also triggered by push to main)
 ```
 
-Zero external dependencies. Python 3 stdlib only.
-
----
-
-## The Three States
-
-### Alive
-
-```
-    /\_____/\
-   /  o   o  \
-  ( ==  ^  == )       I'm alive! ... probably.
-   )         (
-  (     w     )
- ( (  )   (  ) )
-(__(__)___(__)__)
-```
-
-It's fine. Everything is fine. Don't touch anything.
-
-### Superposition
-
-```
-    /\_/??/\_/\
-   / o?? ??x o \
-  (== ^??? _? ==)     |alive> + |dead>
-   ) ????????? (
-  (  ???????????)
- ( ( ) ????? ( ) )
-(__(__)??????(__)__)
-```
-
-Both alive and dead. Neither alive nor dead. You closed the box
-and now you have to live with this ambiguity.
-
-### Dead
-
-```
-    /\_____/\
-   /  x   x  \
-  ( ==  _  == )
-   )  R.I.P.  (
-  (   ~cat~    )
- ( (  )   (  ) )
-(__(__)___(__)__)
-```
-
-You killed it. Well — you might have killed it when you closed the box,
-or it might have been the opening that did it. Depends on your
-interpretation of quantum mechanics, I guess.
-
-Stays dead until reboot. Think about what you've done.
-
----
+No external dependencies. Python 3 stdlib only.
 
 ## FAQ
 
@@ -242,37 +196,23 @@ Stays dead until reboot. Think about what you've done.
 Don't close the box.
 
 **Can I bring it back?**
-`sudo reboot`. Or just yank the power cord and plug it back in. Same thing.
+`sudo reboot`
 
 **What if I close the box and never open it?**
-Then the cat stays in superposition forever. Schrodinger would approve.
-But that probability counter is going to keep ticking toward 100% and
-at some point you're just lying to yourself.
+Then it stays in superposition forever. But that probability counter keeps ticking toward 100% and at some point you're just lying to yourself.
 
-**Can multiple people connect?**
-Yep. Same cat for everyone. Mutual observers of the same quantum system.
-One of you will probably close the box. The group dynamics around this are
-actually kind of interesting.
+**Multiple people?**
+Same cat for everyone. The group dynamics around who closes the box are actually kind of interesting.
 
 **Why telnet?**
-No auth, no encryption, no ceremony. Raw TCP. It looks cool and it
-fits the vibe. Also I didn't want to deal with SSH key management for
-gallery visitors.
-
-**Why is the program called `cat`?**
-`cat` is dead. Long live `cat`.
+Raw TCP. No auth. Fits the look. Didn't want to deal with SSH keys for gallery visitors.
 
 **Is this real quantum mechanics?**
-It's a random number generator with exponential decay statistics.
-So about as quantum as Schrodinger's original thought experiment, which
-was also just a metaphor. (He was making fun of the Copenhagen
-interpretation, not endorsing it. People forget that part.)
+It's a random number generator with exponential decay statistics. About as quantum as Schrodinger's original thought experiment, which was also just a metaphor. He was making fun of the Copenhagen interpretation, not endorsing it. People forget that.
 
 ---
 
-## Credits
-
-Made by Joey. The cat is fictional. Probably.
+Made by Joey.
 
 ```
     /\_____/\
